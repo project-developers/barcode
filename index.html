@@ -21,11 +21,23 @@
                     constraints: {
                         width: 640,
                         height: 480,
-                        facingMode: "environment"
+                        facingMode: "environment" // Use the back camera
                     },
+                    area: { // Limit the scanning area for better performance
+                        top: "20%",    // top offset
+                        right: "20%",  // right offset
+                        left: "20%",   // left offset
+                        bottom: "20%"  // bottom offset
+                    }
                 },
                 decoder: {
                     readers: ["ean_reader", "ean_8_reader", "code_128_reader", "upc_reader"],
+                    debug: {
+                        drawBoundingBox: true, // Draw bounding box around detected barcode
+                        showFrequency: true,   // Show frequency of detected barcodes
+                        drawScanline: true,    // Draw scanline over the video
+                        showPattern: true      // Show the detected barcode pattern
+                    },
                 },
             }, function(err) {
                 if (err) {
@@ -39,6 +51,30 @@
                 console.log("Barcode detected and processed: ", result);
                 alert("Barcode detected: " + result.codeResult.code);
                 Quagga.stop();
+            });
+
+            Quagga.onProcessed(function(result) {
+                var drawingCtx = Quagga.canvas.ctx.overlay,
+                    drawingCanvas = Quagga.canvas.dom.overlay;
+
+                if (result) {
+                    if (result.boxes) {
+                        drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+                        result.boxes.filter(function (box) {
+                            return box !== result.box;
+                        }).forEach(function (box) {
+                            Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
+                        });
+                    }
+
+                    if (result.box) {
+                        Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "blue", lineWidth: 2 });
+                    }
+
+                    if (result.codeResult && result.codeResult.code) {
+                        Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: "red", lineWidth: 3 });
+                    }
+                }
             });
         }
 
