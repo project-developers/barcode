@@ -45,31 +45,29 @@
                     return;
                 }
                 Quagga.start();
+                requestAnimationFrame(updateOverlay); // Start updating overlay
             });
 
-            Quagga.onProcessed(function(result) {
-                var drawingCtx = Quagga.canvas.ctx.overlay,
-                    drawingCanvas = Quagga.canvas.dom.overlay;
-
-                if (result) {
+            function updateOverlay() {
+                Quagga.canvas.ctx.overlay.clearRect(0, 0, Quagga.canvas.dom.overlay.width, Quagga.canvas.dom.overlay.height);
+                if (Quagga.lastProcessedResult) {
+                    var result = Quagga.lastProcessedResult;
                     if (result.boxes) {
-                        drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
-                        result.boxes.filter(function (box) {
+                        result.boxes.filter(function(box) {
                             return box !== result.box;
-                        }).forEach(function (box) {
-                            Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
+                        }).forEach(function(box) {
+                            Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, Quagga.canvas.ctx.overlay, { color: "green", lineWidth: 2 });
                         });
                     }
-
                     if (result.box) {
-                        Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "blue", lineWidth: 2 });
+                        Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, Quagga.canvas.ctx.overlay, { color: "blue", lineWidth: 2 });
                     }
-
                     if (result.codeResult && result.codeResult.code) {
-                        Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: "red", lineWidth: 3 });
+                        Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, Quagga.canvas.ctx.overlay, { color: "red", lineWidth: 3 });
                     }
                 }
-            });
+                requestAnimationFrame(updateOverlay); // Call updateOverlay recursively
+            }
 
             Quagga.onDetected(function(result) {
                 console.log("Barcode detected and processed: ", result);
