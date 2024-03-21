@@ -47,12 +47,6 @@
                 Quagga.start();
             });
 
-            Quagga.onDetected(function(result) {
-                console.log("Barcode detected and processed: ", result);
-                alert("Barcode detected: " + result.codeResult.code);
-                Quagga.stop();
-            });
-
             Quagga.onProcessed(function(result) {
                 var drawingCtx = Quagga.canvas.ctx.overlay,
                     drawingCanvas = Quagga.canvas.dom.overlay;
@@ -75,6 +69,12 @@
                         Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: "red", lineWidth: 3 });
                     }
                 }
+            });
+
+            Quagga.onDetected(function(result) {
+                console.log("Barcode detected and processed: ", result);
+                alert("Barcode detected: " + result.codeResult.code);
+                Quagga.stop();
             });
         }
 
